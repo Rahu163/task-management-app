@@ -114,10 +114,10 @@ function TaskBoard({ user }) {
       }
     }
   };
-  // In TaskBoard.js, add this test function
+  // In TaskBoard.js
   const createTestAllUsersTask = async () => {
     const testTask = {
-      title: `🌍 Task for Everyone - ${new Date().toLocaleTimeString()}`,
+      title: `Task for Everyone - ${new Date().toLocaleTimeString()}`,
       description: "This task should appear in ALL team members' boards",
       status: "todo",
       priority: "medium",
@@ -127,24 +127,24 @@ function TaskBoard({ user }) {
       tags: ["announcement", "team", "all"],
     };
 
-    console.log("🌍 Creating task for ALL users:", testTask);
+    console.log(" Creating task for ALL users:", testTask);
 
     try {
       const newTask = await TaskService.createTask(testTask);
-      console.log("✅ Task for all users created:", newTask);
+      console.log(" Task for all users created:", newTask);
 
       alert(`Task created and visible to ALL team members!
     
 This task will appear in EVERYONE'S task board.`);
     } catch (error) {
-      console.error("❌ Failed to create all-users task:", error);
+      console.error(" Failed to create all-users task:", error);
       alert("Failed to create task. Check console.");
     }
   };
 
   // Add this button to your TaskBoard JSX:
   <Button variant="info" className="me-2" onClick={createTestAllUsersTask}>
-    🌍 Test All Users
+    Test All Users
   </Button>;
   const handleDrop = async (taskId, newStatus) => {
     try {

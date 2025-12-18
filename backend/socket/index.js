@@ -1,7 +1,7 @@
 const connectedUsers = new Map();
 
 const socketHandler = (io, socket) => {
-  console.log("🔌 New WebSocket connection:", socket.id);
+  console.log("New WebSocket connection:", socket.id);
 
   // Join user-specific room when they authenticate
   socket.on("joinUserRoom", (userId) => {
@@ -13,9 +13,9 @@ const socketHandler = (io, socket) => {
       const uniqueUsers = [...new Set(Array.from(connectedUsers.values()))];
       io.emit("userOnline", uniqueUsers);
 
-      console.log(`👤 User ${userId} joined their room`);
+      console.log(` User ${userId} joined their room`);
       console.log(
-        `👥 Currently ${connectedUsers.size} sockets, ${uniqueUsers.length} unique users online`
+        ` Currently ${connectedUsers.size} sockets, ${uniqueUsers.length} unique users online`
       );
     }
   });
@@ -24,7 +24,7 @@ const socketHandler = (io, socket) => {
   socket.on("leaveUserRoom", (userId) => {
     if (userId) {
       socket.leave(userId);
-      console.log(`👤 User ${userId} left their room`);
+      console.log(` User ${userId} left their room`);
     }
   });
 
@@ -39,16 +39,16 @@ const socketHandler = (io, socket) => {
       io.emit("userOnline", uniqueUsers);
       io.emit("userDisconnected", userId);
 
-      console.log(`👤 User ${userId} disconnected`);
+      console.log(` User ${userId} disconnected`);
       console.log(
-        `👥 Currently ${connectedUsers.size} sockets, ${uniqueUsers.length} unique users online`
+        ` Currently ${connectedUsers.size} sockets, ${uniqueUsers.length} unique users online`
       );
     }
   });
 
   // Handle task events from clients
   socket.on("taskCreate", (task) => {
-    console.log(`📝 Task created event received for:`, {
+    console.log(`Task created event received for:`, {
       createdBy: task.createdBy,
       assignee: task.assignee,
     });
@@ -69,7 +69,7 @@ const socketHandler = (io, socket) => {
   });
 
   socket.on("taskUpdate", (task) => {
-    console.log(`🔄 Task update event for:`, task._id);
+    console.log(` Task update event for:`, task._id);
 
     if (task.createdBy) {
       io.to(task.createdBy.toString()).emit("taskUpdated", task);
@@ -85,7 +85,7 @@ const socketHandler = (io, socket) => {
   });
 
   socket.on("taskDelete", (data) => {
-    console.log(`🗑️ Task delete event for:`, data.taskId);
+    console.log(` Task delete event for:`, data.taskId);
 
     if (data.createdBy) {
       io.to(data.createdBy.toString()).emit("taskDeleted", data.taskId);

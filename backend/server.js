@@ -49,15 +49,15 @@ mongoose
     process.env.MONGODB_URI || "mongodb://localhost:27017/taskmanagement"
   )
   .then(() => {
-    console.log("✅ MongoDB connected successfully");
+    console.log(" MongoDB connected successfully");
 
     // Load models AFTER connection is established
     require("./models/User");
     require("./models/Task");
-    console.log("✅ Models loaded");
+    console.log(" Models loaded");
   })
   .catch((err) => {
-    console.error("❌ MongoDB connection error:", err.message);
+    console.error(" MongoDB connection error:", err.message);
   });
 
 // Routes
@@ -66,7 +66,7 @@ app.use("/api/tasks", taskRoutes);
 
 // Socket.io connection
 io.on("connection", (socket) => {
-  console.log("🔌 New WebSocket connection:", socket.id);
+  console.log("New WebSocket connection:", socket.id);
   socketHandler(io, socket);
 });
 
@@ -93,9 +93,9 @@ app.get("/api/test", (req, res) => {
 const PORT = process.env.PORT || 5001;
 
 server.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`🌐 API: http://localhost:${PORT}`);
-  console.log(`🔌 WebSocket: ws://localhost:${PORT}`);
-  console.log(`📊 Health check: http://localhost:${PORT}/health`);
-  console.log(`🧪 Test endpoint: http://localhost:${PORT}/api/test`);
+  console.log(`Server running on port ${PORT}`);
+  console.log(` API: http://localhost:${PORT}`);
+  console.log(`WebSocket: ws://localhost:${PORT}`);
+  console.log(`Health check: http://localhost:${PORT}/health`);
+  console.log(`Test endpoint: http://localhost:${PORT}/api/test`);
 });

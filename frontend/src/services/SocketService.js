@@ -43,23 +43,23 @@ export const SocketProvider = ({ children }) => {
       });
 
       newSocket.on("connect", () => {
-        console.log("✅ Socket connected:", newSocket.id);
+        console.log(" Socket connected:", newSocket.id);
         setIsConnected(true);
 
         // Join user-specific room
         if (user._id) {
           newSocket.emit("joinUserRoom", user._id);
-          console.log("👤 Joined user room:", user._id);
+          console.log(" Joined user room:", user._id);
         }
       });
 
       newSocket.on("userOnline", (users) => {
-        console.log("👥 Online users update:", users);
+        console.log(" Online users update:", users);
         setOnlineUsers(Array.isArray(users) ? users : []);
       });
 
       newSocket.on("userConnected", (userId) => {
-        console.log("👤 User connected:", userId);
+        console.log(" User connected:", userId);
         setOnlineUsers((prev) => {
           if (!prev.includes(userId)) {
             return [...prev, userId];
@@ -69,22 +69,22 @@ export const SocketProvider = ({ children }) => {
       });
 
       newSocket.on("userDisconnected", (userId) => {
-        console.log("👤 User disconnected:", userId);
+        console.log("User disconnected:", userId);
         setOnlineUsers((prev) => prev.filter((id) => id !== userId));
       });
 
       newSocket.on("disconnect", (reason) => {
-        console.log("🔌 Socket disconnected:", reason);
+        console.log("Socket disconnected:", reason);
         setIsConnected(false);
       });
 
       newSocket.on("connect_error", (error) => {
-        console.error("❌ Socket connection error:", error.message);
+        console.error(" Socket connection error:", error.message);
         setIsConnected(false);
       });
 
       newSocket.on("reconnect", (attemptNumber) => {
-        console.log("🔄 Socket reconnected after", attemptNumber, "attempts");
+        console.log(" Socket reconnected after", attemptNumber, "attempts");
         setIsConnected(true);
 
         // Re-join user room after reconnection
@@ -103,7 +103,7 @@ export const SocketProvider = ({ children }) => {
         }
       };
     } catch (error) {
-      console.error("❌ Error parsing user data for socket:", error);
+      console.error(" Error parsing user data for socket:", error);
     }
   }, []);
 
@@ -111,7 +111,7 @@ export const SocketProvider = ({ children }) => {
   const joinUserRoom = (userId) => {
     if (socket && socket.connected && userId) {
       socket.emit("joinUserRoom", userId);
-      console.log("👤 Manually joined user room:", userId);
+      console.log(" Manually joined user room:", userId);
     }
   };
 
@@ -127,18 +127,18 @@ export const SocketProvider = ({ children }) => {
   const emitTaskCreate = (task) => {
     if (socket && isConnected) {
       socket.emit("taskCreate", task);
-      console.log("📢 Emitted taskCreate:", task._id);
+      console.log("Emitted taskCreate:", task._id);
     } else {
-      console.warn("⚠️ Socket not connected, cannot emit taskCreate");
+      console.warn(" Socket not connected, cannot emit taskCreate");
     }
   };
 
   const emitTaskUpdate = (task) => {
     if (socket && isConnected) {
       socket.emit("taskUpdate", task);
-      console.log("📢 Emitted taskUpdate:", task._id);
+      console.log(" Emitted taskUpdate:", task._id);
     } else {
-      console.warn("⚠️ Socket not connected, cannot emit taskUpdate");
+      console.warn(" Socket not connected, cannot emit taskUpdate");
     }
   };
 
@@ -146,9 +146,9 @@ export const SocketProvider = ({ children }) => {
     if (socket && isConnected) {
       const data = { taskId, createdBy, assignee };
       socket.emit("taskDelete", data);
-      console.log("📢 Emitted taskDelete:", taskId);
+      console.log(" Emitted taskDelete:", taskId);
     } else {
-      console.warn("⚠️ Socket not connected, cannot emit taskDelete");
+      console.warn(" Socket not connected, cannot emit taskDelete");
     }
   };
 

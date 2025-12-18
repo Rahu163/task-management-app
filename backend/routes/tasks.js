@@ -10,7 +10,7 @@ router.use(authMiddleware);
 
 // Get all tasks (visible to user)
 router.get("/", async (req, res) => {
-  console.log("📋 Getting tasks for user:", req.user?.email, req.user?._id);
+  console.log(" Getting tasks for user:", req.user?.email, req.user?._id);
 
   try {
     const tasks = await Task.find({
@@ -20,7 +20,7 @@ router.get("/", async (req, res) => {
       .populate("createdBy", "name email")
       .sort({ createdAt: -1 });
 
-    console.log(`✅ Found ${tasks.length} tasks for user ${req.user.email}`);
+    console.log(` Found ${tasks.length} tasks for user ${req.user.email}`);
 
     res.json({
       success: true,
@@ -28,7 +28,7 @@ router.get("/", async (req, res) => {
       tasks,
     });
   } catch (error) {
-    console.error("❌ Get tasks error:", error);
+    console.error(" Get tasks error:", error);
     res.status(500).json({
       success: false,
       message: "Failed to fetch tasks",
@@ -36,7 +36,6 @@ router.get("/", async (req, res) => {
   }
 });
 
-// Create new task - FIXED for cross-account visibility
 // Create new task - WITH ALL USERS SUPPORT
 router.post("/", async (req, res) => {
   console.log("➕ Creating new task for user:", req.user?.email, req.user?._id);
@@ -154,21 +153,21 @@ router.post("/", async (req, res) => {
 
 // Get team members
 router.get("/team-members", async (req, res) => {
-  console.log("👥 Getting team members for:", req.user?.email);
+  console.log(" Getting team members for:", req.user?.email);
 
   try {
     const users = await User.find({ _id: { $ne: req.user._id } })
       .select("name email role isOnline lastSeen _id")
       .sort({ name: 1 });
 
-    console.log(`✅ Found ${users.length} team members`);
+    console.log(` Found ${users.length} team members`);
 
     res.json({
       success: true,
       users,
     });
   } catch (error) {
-    console.error("❌ Get team members error:", error.message);
+    console.error(" Get team members error:", error.message);
     res.status(500).json({
       success: false,
       message: "Failed to fetch team members",
@@ -209,7 +208,7 @@ router.get("/:id", async (req, res) => {
 });
 // Create new task - WITH ALL USERS SUPPORT
 router.post("/", async (req, res) => {
-  console.log("➕ Creating new task for user:", req.user?.email, req.user?._id);
+  console.log(" Creating new task for user:", req.user?.email, req.user?._id);
   console.log("Task data from frontend:", req.body);
 
   try {
@@ -240,15 +239,15 @@ router.post("/", async (req, res) => {
       // Assign to specific user
       finalAssignee = assignee;
       finalAssigneeType = "user";
-      console.log(`✅ Task assigned to specific user: ${assignee}`);
+      console.log(`Task assigned to specific user: ${assignee}`);
     } else if (assigneeType === "all") {
       // Visible to all users
       finalAssignee = "all";
       finalAssigneeType = "all";
-      console.log("✅ Task visible to ALL users");
+      console.log("Task visible to ALL users");
     } else {
       // Private task
-      console.log("✅ Task is private (only creator can see)");
+      console.log(" Task is private (only creator can see)");
     }
 
     const task = new Task({
@@ -264,8 +263,8 @@ router.post("/", async (req, res) => {
     });
 
     await task.save();
-    console.log(`✅ Task created: ${task._id}`);
-    console.log("📊 Task visibility:", finalAssigneeType);
+    console.log(` Task created: ${task._id}`);
+    console.log(" Task visibility:", finalAssigneeType);
 
     // Populate references
     await task.populate("assignee", "name email _id");
@@ -275,7 +274,7 @@ router.post("/", async (req, res) => {
     let allUsers = [];
     if (finalAssigneeType === "all") {
       allUsers = await User.find({}, { _id: 1 });
-      console.log(`🌍 Task visible to ${allUsers.length} users`);
+      console.log(` Task visible to ${allUsers.length} users`);
     }
 
     // Emit socket events
@@ -284,12 +283,12 @@ router.post("/", async (req, res) => {
 
       // Always emit to creator
       req.io.to(req.user._id.toString()).emit("taskCreated", taskData);
-      console.log(`📢 Emitted to creator: ${req.user.email}`);
+      console.log(` Emitted to creator: ${req.user.email}`);
 
       if (finalAssigneeType === "user" && task.assignee && task.assignee._id) {
         // Emit to specific assignee
         req.io.to(task.assignee._id.toString()).emit("taskCreated", taskData);
-        console.log(`📢 Emitted to assignee: ${task.assignee.email}`);
+        console.log(` Emitted to assignee: ${task.assignee.email}`);
       } else if (finalAssigneeType === "all") {
         // Emit to ALL users (except creator, already done)
         allUsers.forEach((user) => {
@@ -297,7 +296,7 @@ router.post("/", async (req, res) => {
             req.io.to(user._id.toString()).emit("taskCreated", taskData);
           }
         });
-        console.log(`📢 Emitted to ${allUsers.length - 1} other users`);
+        console.log(` Emitted to ${allUsers.length - 1} other users`);
       }
     }
 
@@ -313,7 +312,7 @@ router.post("/", async (req, res) => {
       visibility: finalAssigneeType,
     });
   } catch (error) {
-    console.error("❌ Create task error:", error.message);
+    console.error(" Create task error:", error.message);
     res.status(500).json({
       success: false,
       message: "Failed to create task",

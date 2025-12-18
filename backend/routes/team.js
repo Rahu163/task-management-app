@@ -21,16 +21,7 @@ router.post("/invite", async (req, res) => {
       });
     }
 
-    // Check if invite already sent (in a real app, you'd have an Invite model)
-    // For now, we'll simulate sending an email
-
-    // In a real app:
-    // 1. Create invite record in database
-    // 2. Generate unique token
-    // 3. Send email with invitation link
-    // 4. Return success
-
-    console.log(`📧 Sending invite to ${email} with role ${role}`);
+    console.log(` Sending invite to ${email} with role ${role}`);
 
     res.json({
       success: true,

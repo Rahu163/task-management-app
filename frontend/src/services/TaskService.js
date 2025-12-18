@@ -4,16 +4,16 @@ const TaskService = {
   // Get team members
   getTeamMembers: async () => {
     try {
-      console.log("👥 Fetching team members...");
+      console.log(" Fetching team members...");
       const response = await api.get("/tasks/team-members");
       console.log(
-        "✅ Team members fetched:",
+        " Team members fetched:",
         response.data?.users?.length || 0,
         "members"
       );
       return response.data?.users || [];
     } catch (error) {
-      console.error("❌ Error fetching team members:");
+      console.error(" Error fetching team members:");
       console.error("Status:", error.response?.status);
       console.error("Data:", error.response?.data);
       console.error("Message:", error.message);
@@ -26,16 +26,12 @@ const TaskService = {
   // Get all tasks
   getTasks: async () => {
     try {
-      console.log("📋 Fetching tasks...");
+      console.log(" Fetching tasks...");
       const response = await api.get("/tasks");
-      console.log(
-        "✅ Tasks fetched:",
-        response.data?.tasks?.length || 0,
-        "tasks"
-      );
+      console.log("Tasks fetched:", response.data?.tasks?.length || 0, "tasks");
       return response.data?.tasks || [];
     } catch (error) {
-      console.error("❌ Error fetching tasks:");
+      console.error(" Error fetching tasks:");
       console.error("Status:", error.response?.status);
       console.error("Data:", error.response?.data);
       console.error("Message:", error.message);
@@ -46,7 +42,7 @@ const TaskService = {
   // In TaskService.js, update createTask for "all" support
   createTask: async (taskData) => {
     try {
-      console.log("➕ Creating task:", {
+      console.log(" Creating task:", {
         title: taskData.title,
         assigneeType: taskData.assigneeType || "private",
         isForAll: taskData.assignee === "all",
@@ -62,11 +58,11 @@ const TaskService = {
           ? "Task created and shared with assignee!"
           : "Task created (private)";
 
-      console.log("✅", message);
+      console.log("", message);
 
       return response.data.task;
     } catch (error) {
-      console.error("❌ Error creating task:");
+      console.error(" Error creating task:");
       console.error("Status:", error.response?.status);
       console.error("Data:", error.response?.data);
       console.error("Message:", error.message);
@@ -77,7 +73,7 @@ const TaskService = {
   // Update task status
   updateTaskStatus: async (taskId, status) => {
     try {
-      console.log("🔄 Updating task status:", taskId, "->", status);
+      console.log(" Updating task status:", taskId, "->", status);
       const response = await api.patch(`/tasks/${taskId}/status`, { status });
       return response.data.task;
     } catch (error) {

@@ -21,7 +21,7 @@ const taskSchema = new mongoose.Schema({
     default: "medium",
   },
   assignee: {
-    type: mongoose.Schema.Types.Mixed, // Changed from ObjectId to Mixed
+    type: mongoose.Schema.Types.Mixed,
     ref: "User",
   },
   assigneeType: {

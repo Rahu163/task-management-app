@@ -77,9 +77,9 @@ function Team() {
     setError("");
 
     try {
-      console.log("👥 Fetching team members from backend...");
+      console.log(" Fetching team members from backend...");
       const members = await TaskService.getTeamMembers();
-      console.log("✅ Team members response:", members);
+      console.log(" Team members response:", members);
 
       // Ensure members is an array
       if (Array.isArray(members)) {
@@ -96,13 +96,13 @@ function Team() {
 
         setTeamMembers(updatedMembers);
         console.log(
-          `✅ Loaded ${updatedMembers.length} team members from backend`
+          ` Loaded ${updatedMembers.length} team members from backend`
         );
       } else {
         throw new Error("Invalid response format");
       }
     } catch (error) {
-      console.error("❌ Error fetching team members:", error);
+      console.error(" Error fetching team members:", error);
       setError(
         "Failed to load team members from server. Showing mock data instead."
       );
@@ -171,7 +171,7 @@ function Team() {
 
     try {
       // In a real app, this would call an API endpoint
-      console.log("📧 Sending invite to:", inviteEmail, "Role:", inviteRole);
+      console.log(" Sending invite to:", inviteEmail, "Role:", inviteRole);
 
       // Simulate API call delay
       await new Promise((resolve) => setTimeout(resolve, 1500));
@@ -196,7 +196,7 @@ function Team() {
       setShowInviteModal(false);
       setInviteSuccess(true);
     } catch (error) {
-      console.error("❌ Error sending invite:", error);
+      console.error(" Error sending invite:", error);
       setInviteError("Failed to send invitation. Please try again.");
       showToastNotification("Failed to send invitation", "danger");
     } finally {

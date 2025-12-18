@@ -165,12 +165,12 @@ const TaskModal = ({ show, onHide, task, onSubmit, teamMembers, user }) => {
           : [],
       };
 
-      console.log("📤 Sending to backend:", taskData);
+      console.log("Sending to backend:", taskData);
 
       await onSubmit(taskData);
       onHide();
     } catch (err) {
-      console.error("❌ Error submitting task:", err);
+      console.error("Error submitting task:", err);
       setError(err.message || "Failed to save task");
     } finally {
       setLoading(false);
@@ -194,25 +194,25 @@ const TaskModal = ({ show, onHide, task, onSubmit, teamMembers, user }) => {
     switch (formData.assigneeType) {
       case "private":
         return {
-          text: "👤 Private - Only you can see this task",
+          text: " Private - Only you can see this task",
           variant: "info",
           icon: <FaUser className="me-1" />,
         };
       case "user":
         return {
-          text: `👥 Shared with ${selectedAssignee?.name || "selected user"}`,
+          text: `Shared with ${selectedAssignee?.name || "selected user"}`,
           variant: "success",
           icon: <FaUsers className="me-1" />,
         };
       case "all":
         return {
-          text: "🌍 Visible to all team members",
+          text: " Visible to all team members",
           variant: "warning",
           icon: <FaGlobe className="me-1" />,
         };
       default:
         return {
-          text: "👤 Private",
+          text: " Private",
           variant: "info",
           icon: <FaUser className="me-1" />,
         };

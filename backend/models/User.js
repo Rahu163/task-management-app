@@ -1,4 +1,3 @@
-// backend/models/User.js - FINAL WORKING VERSION
 const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema({
@@ -37,10 +36,7 @@ const userSchema = new mongoose.Schema({
   },
 });
 
-// NO PRE-SAVE HOOK AT ALL
-// We handle password hashing in the auth routes
-
 const User = mongoose.model("User", userSchema);
-console.log("✅ User model loaded (no pre-save hook)");
+console.log(" User model loaded (no pre-save hook)");
 
 module.exports = User;
