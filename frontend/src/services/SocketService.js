@@ -23,7 +23,7 @@ export const SocketProvider = ({ children }) => {
     const token = localStorage.getItem("token");
 
     if (!token || !userStr) {
-      console.log("🔌 No token or user found, skipping socket connection");
+      console.log("No token or user found, skipping socket connection");
       return;
     }
 
@@ -31,12 +31,11 @@ export const SocketProvider = ({ children }) => {
       const user = JSON.parse(userStr);
       setCurrentUser(user);
 
-      console.log("🔌 Initializing socket connection for user:", user._id);
+      console.log(" Initializing socket connection for user:", user._id);
 
       // Create socket connection
       const newSocket = io(
-        process.env.REACT_APP_SOCKET_URL ||
-          "https://task-management-app-backend-iota.vercel.app",
+        process.env.REACT_APP_SOCKET_URL || "http://localhost:5001",
         {
           transports: ["websocket", "polling"],
           reconnection: true,
