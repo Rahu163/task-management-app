@@ -34,13 +34,17 @@ export const SocketProvider = ({ children }) => {
       console.log("🔌 Initializing socket connection for user:", user._id);
 
       // Create socket connection
-      const newSocket = io("http://localhost:5001", {
-        transports: ["websocket", "polling"],
-        reconnection: true,
-        reconnectionAttempts: 5,
-        reconnectionDelay: 1000,
-        query: { userId: user._id },
-      });
+      const newSocket = io(
+        process.env.REACT_APP_SOCKET_URL ||
+          "https://task-management-backend.vercel.app",
+        {
+          transports: ["websocket", "polling"],
+          reconnection: true,
+          reconnectionAttempts: 5,
+          reconnectionDelay: 1000,
+          query: { userId: user._id },
+        }
+      );
 
       newSocket.on("connect", () => {
         console.log(" Socket connected:", newSocket.id);
