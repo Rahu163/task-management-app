@@ -2,7 +2,7 @@ import axios from "axios";
 
 const API_URL =
   process.env.REACT_APP_API_URL ||
-  "https://task-management-backend.vercel.app/api";
+  "https://task-management-app-backend-iota.vercel.app/api";
 // Create axios instance
 const api = axios.create({
   baseURL: API_URL,

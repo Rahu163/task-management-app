@@ -36,7 +36,7 @@ export const SocketProvider = ({ children }) => {
       // Create socket connection
       const newSocket = io(
         process.env.REACT_APP_SOCKET_URL ||
-          "https://task-management-backend.vercel.app",
+          "https://task-management-app-backend-iota.vercel.app",
         {
           transports: ["websocket", "polling"],
           reconnection: true,
