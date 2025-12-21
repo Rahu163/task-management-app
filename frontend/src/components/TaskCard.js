@@ -7,7 +7,7 @@ import {
   FaClock,
   FaGlobe,
   FaUsers,
-} from "react-icons/fa"; // ADDED MISSING IMPORTS
+} from "react-icons/fa";
 import { format } from "date-fns";
 
 function TaskCard({ task, onEdit, onDelete, onDragStart }) {

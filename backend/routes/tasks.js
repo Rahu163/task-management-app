@@ -10,22 +10,48 @@ router.use(authMiddleware);
 
 // Get all tasks (visible to user)
 router.get("/", async (req, res) => {
-  console.log(" Getting tasks for user:", req.user?.email, req.user?._id);
+  console.log("Getting tasks for user:", req.user?.email, req.user?._id);
 
   try {
+    // Get tasks where:
+    // 1. User is creator OR
+    // 2. User is assignee OR
+    // 3. Task is visible to all users (assignee = "all")
     const tasks = await Task.find({
-      $or: [{ createdBy: req.user._id }, { assignee: req.user._id }],
+      $or: [
+        { createdBy: req.user._id },
+        { assignee: req.user._id },
+        { assignee: "all" },
+      ],
     })
-      .populate("assignee", "name email")
-      .populate("createdBy", "name email")
+      .populate("assignee", "name email _id")
+      .populate("createdBy", "name email _id")
       .sort({ createdAt: -1 });
 
     console.log(` Found ${tasks.length} tasks for user ${req.user.email}`);
+
+    // Log breakdown
+    const breakdown = {
+      createdByUser: tasks.filter(
+        (t) => t.createdBy._id.toString() === req.user._id.toString()
+      ).length,
+      assignedToUser: tasks.filter(
+        (t) =>
+          t.assignee &&
+          t.assignee._id &&
+          t.assignee._id.toString() === req.user._id.toString()
+      ).length,
+      visibleToAll: tasks.filter((t) => t.assignee === "all").length,
+      total: tasks.length,
+    };
+
+    console.log("Task breakdown:", breakdown);
 
     res.json({
       success: true,
       count: tasks.length,
       tasks,
+      breakdown,
     });
   } catch (error) {
     console.error(" Get tasks error:", error);
@@ -38,7 +64,7 @@ router.get("/", async (req, res) => {
 
 // Create new task - WITH ALL USERS SUPPORT
 router.post("/", async (req, res) => {
-  console.log("➕ Creating new task for user:", req.user?.email, req.user?._id);
+  console.log("Creating new task for user:", req.user?.email, req.user?._id);
   console.log("Task data from frontend:", req.body);
 
   try {
@@ -65,19 +91,23 @@ router.post("/", async (req, res) => {
     let finalAssignee = null;
     let finalAssigneeType = "private";
 
-    if (assigneeType === "user" && assignee && assignee !== req.user._id) {
+    if (
+      assigneeType === "user" &&
+      assignee &&
+      assignee !== req.user._id.toString()
+    ) {
       // Assign to specific user
       finalAssignee = assignee;
       finalAssigneeType = "user";
-      console.log(`✅ Task assigned to specific user: ${assignee}`);
+      console.log(`Task assigned to specific user: ${assignee}`);
     } else if (assigneeType === "all") {
       // Visible to all users
       finalAssignee = "all";
       finalAssigneeType = "all";
-      console.log("✅ Task visible to ALL users");
+      console.log("Task visible to ALL users");
     } else {
       // Private task
-      console.log("✅ Task is private (only creator can see)");
+      console.log("Task is private (only creator can see)");
     }
 
     const task = new Task({
@@ -93,32 +123,53 @@ router.post("/", async (req, res) => {
     });
 
     await task.save();
-    console.log(`✅ Task created: ${task._id}`);
-    console.log("📊 Task visibility:", finalAssigneeType);
+    console.log(`Task created: ${task._id}`);
+    console.log("Task visibility:", finalAssigneeType);
 
-    // Populate references
-    await task.populate("assignee", "name email _id");
+    // Populate references - BUT BE CAREFUL WITH "all"
     await task.populate("createdBy", "name email _id");
+
+    // Only populate assignee if it's a valid ObjectId (not "all")
+    if (finalAssigneeType === "user" && finalAssignee) {
+      try {
+        await task.populate("assignee", "name email _id");
+        console.log(" Populated assignee:", task.assignee?.email);
+      } catch (error) {
+        console.log(
+          "Could not populate assignee (might be invalid ID):",
+          error.message
+        );
+      }
+    } else if (finalAssigneeType === "all") {
+      console.log("Task is for all users - no specific assignee to populate");
+    }
 
     // Get all users for "all" visibility
     let allUsers = [];
     if (finalAssigneeType === "all") {
-      allUsers = await User.find({}, { _id: 1 });
-      console.log(`🌍 Task visible to ${allUsers.length} users`);
+      allUsers = await User.find({}, { _id: 1, email: 1 });
+      console.log(`Task visible to ${allUsers.length} users`);
+    }
+
+    // Prepare task data for socket emission
+    const taskData = task.toObject();
+
+    // Add assignee info for "all" case
+    if (finalAssigneeType === "all") {
+      taskData.assignee = "all";
+      taskData.assigneeType = "all";
     }
 
     // Emit socket events
     if (req.io) {
-      const taskData = task.toObject();
-
       // Always emit to creator
       req.io.to(req.user._id.toString()).emit("taskCreated", taskData);
-      console.log(`📢 Emitted to creator: ${req.user.email}`);
+      console.log(` Emitted to creator: ${req.user.email}`);
 
       if (finalAssigneeType === "user" && task.assignee && task.assignee._id) {
         // Emit to specific assignee
         req.io.to(task.assignee._id.toString()).emit("taskCreated", taskData);
-        console.log(`📢 Emitted to assignee: ${task.assignee.email}`);
+        console.log(`Emitted to assignee: ${task.assignee.email}`);
       } else if (finalAssigneeType === "all") {
         // Emit to ALL users (except creator, already done)
         allUsers.forEach((user) => {
@@ -126,7 +177,7 @@ router.post("/", async (req, res) => {
             req.io.to(user._id.toString()).emit("taskCreated", taskData);
           }
         });
-        console.log(`📢 Emitted to ${allUsers.length - 1} other users`);
+        console.log(`Emitted to ${allUsers.length - 1} other users`);
       }
     }
 
@@ -138,11 +189,12 @@ router.post("/", async (req, res) => {
           : finalAssigneeType === "user"
           ? "Task created and shared with assignee!"
           : "Task created (private)",
-      task,
+      task: taskData, // Send the prepared task data
       visibility: finalAssigneeType,
     });
   } catch (error) {
-    console.error("❌ Create task error:", error.message);
+    console.error(" Create task error:", error.message);
+    console.error("Error stack:", error.stack);
     res.status(500).json({
       success: false,
       message: "Failed to create task",
@@ -399,62 +451,118 @@ router.put("/:id", async (req, res) => {
 
 // Update task status
 router.patch("/:id/status", async (req, res) => {
+  console.log(`Updating task status: ${req.params.id} -> ${req.body.status}`);
+  console.log("User making request:", req.user?.email);
+
   try {
     const { status } = req.body;
 
-    if (!["todo", "inprogress", "done"].includes(status)) {
+    if (!status) {
+      console.error(" No status provided in request body");
       return res.status(400).json({
         success: false,
-        message: "Invalid status value",
+        message: "Status is required",
       });
     }
 
+    if (!["todo", "inprogress", "done"].includes(status)) {
+      console.error("Invalid status value:", status);
+      return res.status(400).json({
+        success: false,
+        message: "Invalid status value. Must be todo, inprogress, or done",
+      });
+    }
+
+    console.log(` Looking for task: ${req.params.id}`);
     const task = await Task.findOne({
       _id: req.params.id,
-      $or: [{ createdBy: req.user._id }, { assignee: req.user._id }],
+      $or: [
+        { createdBy: req.user._id },
+        { assignee: req.user._id },
+        { assignee: "all" },
+      ],
     });
 
     if (!task) {
+      console.error(" Task not found or no permission:", req.params.id);
       return res.status(404).json({
         success: false,
         message: "Task not found or you don't have permission to update it",
       });
     }
 
+    console.log(` Task found: ${task.title}, current status: ${task.status}`);
+
+    // Update only the status field
     task.status = status;
-    task.updatedAt = Date.now();
+
+    console.log("Saving task...");
+    // Save the task
     await task.save();
+    console.log(" Task saved successfully");
 
     // Populate for socket emission
+    console.log("Populating references...");
     await task.populate("assignee", "name email _id");
     await task.populate("createdBy", "name email _id");
 
     // Emit socket event
     if (req.io) {
+      console.log("Emitting socket event...");
       const taskData = task.toObject();
 
       // Notify task creator
       req.io.to(task.createdBy._id.toString()).emit("taskUpdated", taskData);
+      console.log(` Emitted to creator: ${task.createdBy.email}`);
 
       // Notify assignee if different from creator
-      if (
-        task.assignee &&
-        task.assignee._id.toString() !== task.createdBy._id.toString()
-      ) {
-        req.io.to(task.assignee._id.toString()).emit("taskUpdated", taskData);
+      if (task.assignee && task.assignee !== "all") {
+        if (
+          task.assignee._id &&
+          task.assignee._id.toString() !== task.createdBy._id.toString()
+        ) {
+          req.io.to(task.assignee._id.toString()).emit("taskUpdated", taskData);
+          console.log(` Emitted to assignee: ${task.assignee.email}`);
+        }
+      } else if (task.assignee === "all") {
+        // Notify all users (broadcast)
+        console.log(" Task is visible to all, broadcasting update...");
+        const allUsers = await User.find({}, { _id: 1 });
+        allUsers.forEach((user) => {
+          if (user._id.toString() !== task.createdBy._id.toString()) {
+            req.io.to(user._id.toString()).emit("taskUpdated", taskData);
+          }
+        });
+        console.log(`Broadcast task update to ${allUsers.length} users`);
       }
     }
 
+    console.log(`Status update complete: ${task._id} -> ${task.status}`);
     res.json({
       success: true,
-      message: "Task status updated",
+      message: "Task status updated successfully",
       task,
     });
   } catch (error) {
-    console.error("Update status error:", error);
+    console.error("UPDATE STATUS ERROR ");
+    console.error("Error message:", error.message);
+    console.error("Error stack:", error.stack);
+    console.error("Task ID:", req.params.id);
+    console.error("Status requested:", req.body.status);
+    console.error("User ID:", req.user?._id);
+
     res.status(500).json({
       success: false,
       message: "Failed to update task status",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined,
+      details:
+        process.env.NODE_ENV === "development"
+          ? {
+              taskId: req.params.id,
+              requestedStatus: req.body.status,
+              errorMessage: error.message,
+            }
+          : undefined,
     });
   }
 });
@@ -572,6 +680,61 @@ router.post("/:id/comments", async (req, res) => {
     });
   }
 });
+
+// Helper function to safely populate tasks
+const safePopulateTasks = async (tasks, userId) => {
+  return Promise.all(
+    tasks.map(async (task) => {
+      const taskObj = task.toObject();
+
+      // Populate createdBy
+      if (task.createdBy && typeof task.createdBy === "object") {
+        taskObj.createdBy = task.createdBy;
+      } else {
+        // If not populated, populate it
+        const populated = await Task.findById(task._id).populate(
+          "createdBy",
+          "name email _id"
+        );
+        taskObj.createdBy = populated.createdBy;
+      }
+
+      // Handle assignee
+      if (task.assignee === "all") {
+        taskObj.assignee = "all";
+        taskObj.assigneeType = "all";
+      } else if (task.assignee && task.assignee !== "all") {
+        // Try to populate assignee if it's a valid ObjectId
+        try {
+          if (typeof task.assignee === "string") {
+            // It's an ObjectId string, try to populate
+            const populated = await Task.findById(task._id).populate(
+              "assignee",
+              "name email _id"
+            );
+            taskObj.assignee = populated.assignee;
+          } else if (typeof task.assignee === "object" && task.assignee._id) {
+            // Already populated
+            taskObj.assignee = task.assignee;
+          } else {
+            taskObj.assignee = null;
+          }
+        } catch (error) {
+          console.log(
+            `Error populating assignee for ${task._id}:`,
+            error.message
+          );
+          taskObj.assignee = null;
+        }
+      } else {
+        taskObj.assignee = null;
+      }
+
+      return taskObj;
+    })
+  );
+};
+
 // Debug: Get all tasks in system
 router.get("/debug/all-tasks", async (req, res) => {
   try {

@@ -1,6 +1,6 @@
 import React from "react";
 import { Card, Badge, Button } from "react-bootstrap";
-import { FaPlus, FaGlobe, FaUsers, FaUser } from "react-icons/fa"; // ADDED MISSING IMPORTS
+import { FaPlus, FaGlobe, FaUsers, FaUser } from "react-icons/fa";
 import TaskCard from "./TaskCard";
 
 function TaskColumn({

@@ -22,7 +22,6 @@ const taskSchema = new mongoose.Schema({
   },
   assignee: {
     type: mongoose.Schema.Types.Mixed,
-    ref: "User",
   },
   assigneeType: {
     type: String,
@@ -69,11 +68,16 @@ const taskSchema = new mongoose.Schema({
   },
 });
 
-// Update middleware
-taskSchema.pre("save", function (next) {
+// OPTION A: Use async function (NO next parameter)
+taskSchema.pre("save", async function () {
   this.updatedAt = Date.now();
-  next();
+  // Don't call next() in async functions
 });
 
+// OPTION B: Remove ALL middleware and update manually in routes
+// NO MIDDLEWARE AT ALL
+
 const Task = mongoose.model("Task", taskSchema);
+console.log(" Task model loaded - SIMPLE VERSION");
+
 module.exports = Task;
