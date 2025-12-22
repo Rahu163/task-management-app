@@ -381,11 +381,7 @@ router.put("/:id", async (req, res) => {
     // Find task that user has access to
     let task = await Task.findOne({
       _id: req.params.id,
-      $or: [
-        { createdBy: req.user._id },
-        { assignee: req.user._id },
-        { assignee: "all" },
-      ],
+      $or: [{ createdBy: req.user._id }, { assignee: req.user._id }],
     });
 
     if (!task) {
@@ -432,9 +428,6 @@ router.put("/:id", async (req, res) => {
       // Notify old assignee if they were removed or changed
       if (
         oldAssignee &&
-        oldAssignee !== "all" &&
-        task.assignee &&
-        task.assignee !== "all" &&
         oldAssignee.toString() !== task.assignee._id.toString() &&
         oldAssignee.toString() !== task.createdBy._id.toString()
       ) {
