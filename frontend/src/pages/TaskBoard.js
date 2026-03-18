@@ -104,14 +104,79 @@ function TaskBoard({ user }) {
   };
 
   const handleDeleteTask = async (taskId) => {
-    if (window.confirm("Are you sure you want to delete this task?")) {
-      try {
-        await TaskService.deleteTask(taskId);
-        emitTaskDelete(taskId);
-      } catch (error) {
-        console.error("Error deleting task:", error);
-        setError("Failed to delete task. Please try again.");
+    console.log(" Delete handler called with ID:", taskId);
+    console.log("Task ID type:", typeof taskId);
+    console.log("Task ID length:", taskId?.length);
+
+    // Validate task ID
+    if (!taskId) {
+      console.error("Cannot delete: No task ID");
+      setError("Cannot delete: Task ID is missing");
+      return;
+    }
+
+    // Check if it's a valid MongoDB ObjectId
+    const isValidObjectId = /^[0-9a-fA-F]{24}$/.test(taskId);
+    if (!isValidObjectId) {
+      console.error(" Invalid task ID format:", taskId);
+      console.log("This might be a temporary client-side ID");
+
+      // If it's clearly not a real MongoDB ID, just remove it from UI
+      if (
+        window.confirm(
+          "This task may not be saved on the server. Remove it from your view?",
+        )
+      ) {
+        setTasks((prev) => prev.filter((task) => task._id !== taskId));
       }
+      return;
+    }
+
+    // Confirm deletion
+    if (!window.confirm("Are you sure you want to delete this task?")) {
+      return;
+    }
+
+    try {
+      // Show loading state (optional)
+      setLoading(true);
+
+      const result = await TaskService.deleteTask(taskId);
+      console.log(" Delete result:", result);
+
+      // Update UI based on result
+      if (result.success) {
+        // Remove from local state
+        setTasks((prev) => prev.filter((task) => task._id !== taskId));
+
+        // Emit socket event for real-time updates
+        emitTaskDelete(taskId);
+
+        // Show success message (if you have toast)
+        // toast.success("Task deleted successfully!");
+
+        console.log("Task removed from UI");
+      } else {
+        setError(result.error || "Failed to delete task");
+      }
+    } catch (error) {
+      console.error(" Error in delete handler:", error);
+
+      // Handle specific error cases
+      if (error.response?.status === 404) {
+        setError("Task not found. It may have been already deleted.");
+
+        // Remove from UI anyway since it doesn't exist
+        setTasks((prev) => prev.filter((task) => task._id !== taskId));
+        emitTaskDelete(taskId);
+      } else {
+        setError(
+          error.response?.data?.message ||
+            "Failed to delete task. Please try again.",
+        );
+      }
+    } finally {
+      setLoading(false);
     }
   };
   // In TaskBoard.js
