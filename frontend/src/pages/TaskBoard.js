@@ -34,8 +34,8 @@ function TaskBoard({ user }) {
       const handleTaskUpdated = (updatedTask) => {
         setTasks((prev) =>
           prev.map((task) =>
-            task._id === updatedTask._id ? updatedTask : task
-          )
+            task._id === updatedTask._id ? updatedTask : task,
+          ),
         );
       };
 
@@ -92,7 +92,7 @@ function TaskBoard({ user }) {
     try {
       const updatedTask = await TaskService.updateTask(
         selectedTask._id,
-        taskData
+        taskData,
       );
       setShowModal(false);
       setSelectedTask(null);
