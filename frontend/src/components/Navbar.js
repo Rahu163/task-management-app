@@ -14,7 +14,7 @@ import { useSocket } from "../services/SocketService";
 
 function NavigationBar({ user, setUser }) {
   const navigate = useNavigate();
-  const { socket, isConnected, leaveUserRoom } = useSocket();
+  const { isConnected, leaveUserRoom } = useSocket();
   const [notifications] = React.useState([]);
   const [onlineCount, setOnlineCount] = React.useState(0);
 

@@ -203,6 +203,15 @@ function Team() {
       setSendingInvite(false);
     }
   };
+  // When sending invite succeeds
+  setInviteSuccess(true);
+
+  // In your JSX, show a success message
+  {
+    inviteSuccess && (
+      <div className="alert alert-success">Invitation sent successfully!</div>
+    );
+  }
 
   const handleCopyInviteLink = () => {
     // Create invite link (in a real app, this would be a unique link)
