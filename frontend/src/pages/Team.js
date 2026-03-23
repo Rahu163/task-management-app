@@ -96,7 +96,7 @@ function Team() {
 
         setTeamMembers(updatedMembers);
         console.log(
-          ` Loaded ${updatedMembers.length} team members from backend`
+          ` Loaded ${updatedMembers.length} team members from backend`,
         );
       } else {
         throw new Error("Invalid response format");
@@ -104,7 +104,7 @@ function Team() {
     } catch (error) {
       console.error(" Error fetching team members:", error);
       setError(
-        "Failed to load team members from server. Showing mock data instead."
+        "Failed to load team members from server. Showing mock data instead.",
       );
 
       // Fallback to mock data if API fails
@@ -239,8 +239,8 @@ function Team() {
                 status: "pending",
                 sentDate: new Date().toISOString().split("T")[0],
               }
-            : i
-        )
+            : i,
+        ),
       );
     }
   };
@@ -357,10 +357,10 @@ function Team() {
               {toastVariant === "success"
                 ? "Success"
                 : toastVariant === "danger"
-                ? "Error"
-                : toastVariant === "warning"
-                ? "Warning"
-                : "Info"}
+                  ? "Error"
+                  : toastVariant === "warning"
+                    ? "Warning"
+                    : "Info"}
             </strong>
           </Toast.Header>
           <Toast.Body>{toastMessage}</Toast.Body>
@@ -741,7 +741,7 @@ function Team() {
                           <div className="d-flex align-items-center justify-content-center">
                             <FaCircle
                               className={`me-2 text-${getStatusColor(
-                                isOnline
+                                isOnline,
                               )}`}
                               size={8}
                             />
