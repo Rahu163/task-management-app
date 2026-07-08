@@ -25,12 +25,7 @@ const io = socketio(server, {
 });
 
 // Middleware
-const allowedOrigins = [
-  "http://localhost:3000",
-  "https://task-management-app.vercel.app",
-  "https://task-management-app-git-main-yourusername.vercel.app",
-  "https://task-management-app-yourusername.vercel.app",
-];
+const allowedOrigins = ["http://localhost:3000", process.env.CLIENT_URL];
 
 app.use(
   cors({
@@ -48,7 +43,7 @@ app.use(
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
-  })
+  }),
 );
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -63,7 +58,7 @@ app.use("/api/team", teamRoutes);
 // MongoDB Connection
 mongoose
   .connect(
-    process.env.MONGODB_URI || "mongodb://localhost:27017/taskmanagement"
+    process.env.MONGODB_URI || "mongodb://localhost:27017/taskmanagement",
   )
   .then(() => {
     console.log(" MongoDB connected successfully");
