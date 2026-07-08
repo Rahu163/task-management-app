@@ -39,6 +39,7 @@ function Team() {
   const [inviteEmail, setInviteEmail] = React.useState("");
   const [inviteRole, setInviteRole] = React.useState("user");
   const [sendingInvite, setSendingInvite] = React.useState(false);
+  // eslint-disable-next-line no-unused-vars
   const [inviteSuccess, setInviteSuccess] = React.useState(false);
   const [inviteError, setInviteError] = React.useState("");
 
