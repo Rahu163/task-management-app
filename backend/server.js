@@ -15,7 +15,7 @@ const server = http.createServer(app);
 // Socket.io configuration with better settings
 const io = socketio(server, {
   cors: {
-    origin: ["http://localhost:3000", process.env.CLIENT_URL],
+    origin: ["http://localhost:3000", process.env.CLIENT_URL].filter(Boolean),
     methods: ["GET", "POST"],
     credentials: true,
   },
@@ -25,7 +25,9 @@ const io = socketio(server, {
 });
 
 // Middleware
-const allowedOrigins = ["http://localhost:3000", process.env.CLIENT_URL];
+const allowedOrigins = ["http://localhost:3000", process.env.CLIENT_URL].filter(
+  Boolean,
+);
 
 app.use(
   cors({
